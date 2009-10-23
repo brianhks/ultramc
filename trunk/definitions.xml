@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+
+<definitions xmlns="http://www.cpmake.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.cpmake.org ../schema/definitions.xsd">
+	<!-- ======================================================================= -->
+	<definition name="depunit">
+		<command name="runtest">java</command>
+		
+		<!-- Debugger options -->
+		<option command="runtest" name="debug" priority="1">
+			-Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5656
+		</option>
+		
+		<option command="runtest" name="classpath" priority="3"
+				pattern="(.+)">-cp $1</option>
+		<option command="runtest" name="MANDATORY" priority="4">org.depunit.DepUnit</option>
+		
+		<option command="runtest" name="regression" priority="5">-e</option>
+		<option command="runtest" name="reportFile" priority="5"
+				pattern="(.+)">-r $1</option>
+		<option command="runtest" name="styleSheet" priority="5"
+				pattern="(.+)">-s $1</option>
+		<option command="runtest" name="xmlInput" priority="5"
+				pattern="(.+)">-x $1</option>
+		<option command="runtest" name="testTags" priority="5"
+				pattern="(.+)">-t $1</option>
+		<option command="runtest" name="testClasses" priority="5"
+				pattern="(.+)">-c $1</option>
+		<option command="runtest" name="testMethods" priority="6"
+				pattern="(.+)">$1</option>
+	</definition>
+</definitions>
