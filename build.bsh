@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2004, Brian Hawkins
+ * Permission is granted to use this code without restriction as long
+ * as this copyright notice appears in all source files.
+ */
+ 
+import cpmake.*;
+import cpmake.java.*;
+
+print("===============================================================");
+
+version = "0.5";
+
+bldoutdir = "build";
+srcdir = "src/java";
+targetjar = "ultramc-"+version+".jar";
+extdir = "lib";
+distdir = bldoutdir+"/dist";
+
+testsrc = "test/src";
+testbuilddir = bldoutdir+"/test";
+
+make.setProperty(make.PROP_MULTI_THREAD_OUTPUT, "true");
+make.setProperty(make.PROP_COPY_PERMISSIONS, "off");
+
+
+make.includeDefinitionFile("definitions.xml");
+//-------------------------------------------------------------------
+//==-- CREATES RULE FOR PROGRAM --==
+jp = make.initPlugin(new JavaProgram(srcdir, bldoutdir, targetjar));
+jp.createRules();
+jp.setDefaultTarget();
+def = jp.getCompiler().getDefinition();
+def.setOption("unchecked");
+compileClasspath = jp.getCompiler().getClassPath();
+classFiles = jp.getCompiler().getClassFiles();
+
+
+//-------------------------------------------------------------------
+//==-- CREATE JAVADOCS --==
+make.createPhonyRule("javadoc", null, "javadoc");
+void javadoc(String target, String[] prereqs)
+	{
+	cmd = "javadoc -public -d doc/javadoc -sourcepath src -subpackages genorm.runtime";
+	make.exec(cmd);
+	//make.exec(srcdir, "javadoc -public -d ../doc "+make.arrayToString(sourceFiles), true);
+	}
+
+//-------------------------------------------------------------------
+//==-- COMPILE TEST JAVA FILES --==
+testCompileClasspath = new ClassPath(compileClasspath);
+testCompileClasspath.addPath("lib/depunit.jar");
+JavaCompiler jctest = make.initPlugin(new JavaCompiler(testsrc, testbuilddir, testCompileClasspath));
+testClassFiles = jctest.getClassFiles();
+testCompileClasspath = jctest.getClassPath();
+make.createPatternDependency(testbuilddir+".*\\.class", classFiles);
+
+//------------------------------------------------------------------
+//==-- DEPUNIT TESTS --==
+make.createPhonyRule("test", testClassFiles, "depUnitTest");
+depunitDefinition = make.getDefinition("depunit");
+if (make.getProperty("DEBUG", "off").equals("on"))
+	depunitDefinition.setOption("debug");
+void depUnitTest(CPMakeRule rule)
+	{
+	depCP = new ClassPath(testCompileClasspath);
+	if (make.getProperty("TEST_TAGS") != null)
+		depunitDefinition.setOption("testTags", make.getProperty("TEST_TAGS").split(","));
+		
+	depunitDefinition.setOption("classpath", depCP.toString());
+	depunitDefinition.setOption("xmlInput", "test/unittest.xml");
+	depunitDefinition.setOption("reportFile", bldoutdir+"/results.xml");
+	cmd = depunitDefinition.getCommand("runtest");
+	make.exec(cmd);
+	}
+

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- <!DOCTYPE suite SYSTEM "http://depunit.googlecode.com/svn/trunk/doc/depunit_1_0.dtd"> -->
+
+<suite name="LingoPoint test suite" verbose="1">
+	<run name="Buffer Pool Tests">
+		<classes>
+			<class name="ultramc.buffer.BufferTest"/>
+		</classes>
+	</run>
+	
+	<run name="Storage Tests">
+		<classes>
+			<class name="ultramc.DefaultEncoderTest"/>
+			<class name="ultramc.StorageTest"/>
+		</classes>
+	</run>
+	
+</suite>
