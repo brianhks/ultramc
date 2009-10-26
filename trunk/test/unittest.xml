@@ -15,4 +15,10 @@
 		</classes>
 	</run>
 	
+	<run name="Hash Tests">
+		<classes>
+			<class name="ultramc.HashTest"/>
+		</classes>
+	</run>
+	
 </suite>
