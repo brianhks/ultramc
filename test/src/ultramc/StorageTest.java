@@ -12,7 +12,7 @@ public class StorageTest
 	@Test( cleanupMethod = "stopClient" )
 	public void startClient()
 		{
-		m_client = new MemCachedClient(new InetSocketAddress("brolinux", 11211));
+		m_client = new MemCachedClient(new InetSocketAddress("localhost", 11211));
 		m_client.setDefaultExpiry(10);
 		m_client.setDefaultTimeout(1000);
 		

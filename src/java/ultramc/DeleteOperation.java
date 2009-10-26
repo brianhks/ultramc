@@ -14,14 +14,12 @@ public class DeleteOperation extends Operation<DeleteOperation>
 	private String m_key;
 	private String m_response;
 	private boolean m_reply;
-	private int m_time;
 	
 	/*package*/ DeleteOperation(String key, MemCachedClient client)
 		{
 		super(client);
 		m_response = NOT_CALLED;
 		m_key = key;
-		m_time = 0;
 		m_reply = client.getDefaultReply();
 		}
 		
@@ -35,12 +33,6 @@ public class DeleteOperation extends Operation<DeleteOperation>
 	public String getResponse()
 		{
 		return (m_response);
-		}
-		
-	public DeleteOperation setTime(int time)
-		{
-		m_time = time;
-		return (this);
 		}
 		
 	public DeleteOperation run()
@@ -59,7 +51,7 @@ public class DeleteOperation extends Operation<DeleteOperation>
 		StringBuilder command = new StringBuilder();
 		command.append("delete ");
 		command.append(key).append(" ");
-		command.append(m_time).append(" ");
+		//command.append(m_time).append(" "); //1.4.X not compatible with this option
 		if (!m_reply)
 			command.append("noreply");
 		command.append("\r\n");
