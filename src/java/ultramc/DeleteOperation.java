@@ -6,20 +6,18 @@ import java.io.IOException;
 import ultramc.connect.ServerConnection;
 import ultramc.buffer.*;
 
-public class DeleteOperation extends Operation<DeleteOperation>
+public class DeleteOperation extends KeyedOperation<DeleteOperation>
 	{
 	public static final String DELETED = "DELETED";
 	public static final String NOT_FOUND = "NOT_FOUND";
 	
-	private String m_key;
 	private String m_response;
 	private boolean m_reply;
 	
 	/*package*/ DeleteOperation(String key, MemCachedClient client)
 		{
-		super(client);
+		super(key, client);
 		m_response = NOT_CALLED;
-		m_key = key;
 		m_reply = client.getDefaultReply();
 		}
 		
@@ -39,9 +37,8 @@ public class DeleteOperation extends Operation<DeleteOperation>
 		{
 		String resp = NOT_FOUND;
 		String key = m_keyEncoder.encodeKey(m_key);
-		int hash = hashKey(key);
 		
-		ServerConnection serverConnection = m_client.getServerConnection(hash);
+		ServerConnection serverConnection = m_client.getServerConnection(m_hashKey);
 		if (serverConnection == null)
 			{
 			m_response = ERROR;
