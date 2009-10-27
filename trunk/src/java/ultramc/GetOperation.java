@@ -6,7 +6,7 @@ import java.io.IOException;
 import ultramc.connect.ServerConnection;
 import ultramc.buffer.*;
 
-public class GetOperation extends Operation<GetOperation>
+public class GetOperation extends KeyedOperation<GetOperation>
 	{
 	
 	private List<String> m_keyList;
@@ -16,14 +16,14 @@ public class GetOperation extends Operation<GetOperation>
 	
 	/*package*/ GetOperation(String key, MemCachedClient client)
 		{
-		super(client);
+		super(null, client);
 		init();
 		m_keyList.add(key);
 		}
 		
 	/*package*/ GetOperation(List<String> keys, MemCachedClient client)
 		{
-		super(client);
+		super(null, client);
 		init();
 		m_keyList.addAll(keys);
 		}
@@ -49,10 +49,11 @@ public class GetOperation extends Operation<GetOperation>
 		
 	public GetOperation run()
 		{
-		//TODO: figure out how to deal with the hash
-		int hash = 0;
+		/*
+		if (m_hashKey != null)
+			Use m_hashKey */
 		
-		ServerConnection serverConnection = m_client.getServerConnection(hash);
+		ServerConnection serverConnection = m_client.getServerConnection("hashKey");
 		if (serverConnection == null)
 			{
 			m_response = ERROR;

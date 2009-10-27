@@ -25,10 +25,6 @@ public class Operation<T extends Operation>
 	protected KeyEncoder m_keyEncoder;
 	protected long m_timeout;
 	
-	private int m_hash;
-	private boolean m_hashSet;
-	
-	
 	static
 		{
 		END_OF_LINE[0] = '\r';
@@ -44,7 +40,6 @@ public class Operation<T extends Operation>
 	public Operation(MemCachedClient client)
 		{
 		m_client = client;
-		m_hashSet = false;
 		m_keyEncoder = m_client.getDefaultKeyEncoder();
 		m_timeout = client.getDefaultTimeout();
 		m_valueEncoder = client.getDefaultValueTranscoder();
@@ -64,28 +59,6 @@ public class Operation<T extends Operation>
 		return ((T)this);
 		}
 	
-	@SuppressWarnings("unchecked")
-	public T setKeyEncoder(KeyEncoder encoder)
-		{
-		m_keyEncoder = encoder;
-		return ((T)this);
-		}
-		
-	@SuppressWarnings("unchecked")
-	public T setHash(int hash)
-		{
-		m_hashSet = true;
-		m_hash = hash;
-		return ((T)this);
-		}
-		
-	protected int hashKey(String key)
-		{
-		if (m_hashSet)
-			return (m_hash);
-		else
-			return (key.hashCode());
-		}
 		
 	/*package*/ static void writeToChannel(GatheringByteChannel channel, ByteBuffer[] buf, int bytesToWrite)
 			throws IOException

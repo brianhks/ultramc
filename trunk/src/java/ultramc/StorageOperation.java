@@ -8,12 +8,11 @@ import java.nio.channels.SocketChannel;
 import ultramc.connect.ServerConnection;
 
 public abstract class StorageOperation<T extends StorageOperation> 
-		extends Operation<T>
+		extends KeyedOperation<T>
 	{
 	public static final String STORED = "STORED";
 	public static final String NOT_STORED = "NOT_STORED";
 	
-	private String m_key;
 	private Object m_value;
 	private int m_expiry;
 	private boolean m_reply;
@@ -22,8 +21,7 @@ public abstract class StorageOperation<T extends StorageOperation>
 	
 	public StorageOperation(String key, Object value, MemCachedClient client)
 		{
-		super(client);
-		m_key = key;
+		super(key, client);
 		m_value = value;
 		m_expiry = client.getDefaultExpiry();
 		m_reply = client.getDefaultReply();
@@ -52,9 +50,8 @@ public abstract class StorageOperation<T extends StorageOperation>
 		int flags = 0;
 		String resp = NOT_STORED;
 		String key = m_keyEncoder.encodeKey(m_key);
-		int hash = hashKey(key);
 			
-		ServerConnection serverConnection = m_client.getServerConnection(hash);
+		ServerConnection serverConnection = m_client.getServerConnection(m_hashKey);
 		if (serverConnection == null)
 			{
 			m_response = ERROR;

@@ -151,7 +151,7 @@ public class MemCachedClient
 		{
 		String resp = Operation.ERROR;
 		
-		ServerConnection serverConnection = getServerConnection(0);
+		ServerConnection serverConnection = getServerConnection("");
 		if (serverConnection == null)
 			{
 			return (Operation.ERROR);
@@ -200,7 +200,7 @@ public class MemCachedClient
 		}
 		
 	//---------------------------------------------------------------------------
-	/*package*/ ServerConnection getServerConnection(int hash)
+	/*package*/ ServerConnection getServerConnection(String hashKey)
 		{
 		return (m_connectionPool.getServerConnection());
 		}
