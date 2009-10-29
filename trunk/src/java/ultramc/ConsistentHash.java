@@ -23,6 +23,26 @@ public class ConsistentHash
 		public String getKey() { return (m_key); }
 		public double getWeight() { return (m_weight); }
 		}
+		
+	/**
+		Provides a sin wave mapping of entries
+	*/
+	private static class EntryMapper
+		{
+		private int m_count;  //The number of values to map
+		private int m_size;   //The size off the array to map them into
+		
+		public EntryMapper(int count, int size)
+			{
+			m_count = count;
+			m_size = size;
+			}
+			
+		public int mapEntry(int index)
+			{
+			return ((int)(((Math.cos(((Math.PI * (double)index) / (double)m_count ) + Math.PI) + 1.0) / 2.0 ) * (double)m_size));
+			}
+		}
 	
 	private int[] m_lookupTable;
 	private List<WeightedKey> m_keys;
@@ -117,7 +137,41 @@ public class ConsistentHash
 			}
 			
 		//System.out.println(ret.size());
-		return (ret);	
+		return (ret);
+		
+		/* Set<Integer> ret = new HashSet<Integer>();
+		//Hash of key detirmins where the oscilation starts
+		long hash = hash(key);
+		//System.out.println("hash "+hash);
+		int start = (int)(hash % m_lookupTable.length);
+		
+		int oscillations = (int)(hash & 0x1F) +1;
+		System.out.println("Oscil "+oscillations);
+		
+		int oscilLength = m_lookupTable.length / oscillations;
+		int oscilCount = count / oscillations;
+		EntryMapper mapper = new EntryMapper(oscilCount ,oscilLength);
+		
+		
+		int curPos = start;
+		
+		for (int oscNum = 0; oscNum < oscillations; oscNum++)
+			{
+			for (int I = 0; I < oscilCount; I++)
+				{
+				int entry = curPos + mapper.mapEntry(I);
+				if (entry > m_lookupTable.length)
+					entry = entry - m_lookupTable.length;
+					
+				//System.out.println("Entry = "+entry);
+				ret.add(entry);
+				}
+				
+			curPos += oscilLength;
+			}
+			
+		System.out.println("Set size "+ret.size());
+		return (ret); */
 		}
 		
 	//---------------------------------------------------------------------------
