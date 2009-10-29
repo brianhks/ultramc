@@ -3,9 +3,22 @@ package ultramc;
 import org.depunit.annotations.*;
 import org.depunit.RunContext;
 import static org.junit.Assert.*;
+import java.util.*;
 
 public class HashTest
 	{
+	private static class Counter
+		{
+		private int m_count;
+		public void Counter()
+			{
+			m_count = 1;
+			}
+			
+		public void incr() { m_count ++; }
+		public int getCount() { return (m_count); }
+		}
+		
 	private ConsistentHash m_conHash;
 	
 	@Test
@@ -27,26 +40,34 @@ public class HashTest
 		{
 		int[] table = m_conHash.getLookupTable();
 		
-		int zeros = 0;
-		int ones = 0;
-		int twos = 0;
-		int threes = 0;
-		int fours = 0;
+		Map<Integer, Counter> values = new HashMap<Integer, Counter>();
 		for (int I : table)
 			{
-			//System.out.println(I);
-			if (I == 0) zeros ++;
-			else if (I == 1) ones ++;
-			else if (I == 2) twos ++;
-			else if (I == 3) threes ++;
-			else if (I == 4) fours ++;
+			Counter count = values.get(I);
+			if (count == null)
+				values.put(I, new Counter());
+			else
+				count.incr();
 			}
 			
-		System.out.println("0 = "+zeros);
-		System.out.println("1 = "+ones);
-		System.out.println("2 = "+twos);
-		System.out.println("3 = "+threes);
-		System.out.println("4 = "+fours);
+		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
+		int sum = 0;
+		Iterator<Counter> it = values.values().iterator();
+		while (it.hasNext())
+			{
+			Counter counter = it.next();
+			System.out.println(counter.getCount());
+			sum += counter.getCount();
+			if (counter.getCount() < min)
+				min = counter.getCount();
+				
+			if (counter.getCount() > max)
+				max = counter.getCount();
+			}
+			
+		double avg = (double)sum / (double)values.size();
+		System.out.println("Max dif % = "+ ((double)(max - min) / avg));
 		}
 	}
 
