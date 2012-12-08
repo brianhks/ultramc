@@ -58,7 +58,7 @@ public class DeleteOperation extends KeyedOperation<DeleteOperation>
 		
 		int bytesToWrite = sendBuffers[0].limit();
 		
-		BufferSet bs = m_client.getBufferSet();
+		List<BufferSet> bsList = null;
 		
 		try
 			{
@@ -66,9 +66,9 @@ public class DeleteOperation extends KeyedOperation<DeleteOperation>
 			
 			if (m_reply)
 				{
-				readResponse(serverConnection, bs, m_timeout, END_OF_LINE);
+				bsList = readResponse(serverConnection, m_client, m_timeout, END_OF_LINE);
 			
-				String line = readLine(new ByteBufferInputStream(bs));
+				String line = readLine(new ByteBufferInputStream(bsList.get(0)));
 						
 				if (line != null)
 					resp = line;
@@ -84,7 +84,12 @@ public class DeleteOperation extends KeyedOperation<DeleteOperation>
 			serverConnection.closeConnection();
 			}
 			
-		bs.freeBuffers();
+		if (bsList != null)
+			{
+			for (BufferSet bs : bsList)
+				bs.freeBuffers();
+			}
+			
 		m_response = resp;
 		return (this);
 		}

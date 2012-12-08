@@ -25,7 +25,7 @@ public class BufferPool
 	/*package*/ int getBufferSize() { return (m_bufferSize); }
 		
 	//---------------------------------------------------------------------------
-	public BufferSet getBufferSet()
+	public BufferSet createBufferSet()
 		{
 		BufferSet bs = new BufferSet(this);
 		//BufferSetReference bsr = new BufferSetReference(bs, m_refQueue);

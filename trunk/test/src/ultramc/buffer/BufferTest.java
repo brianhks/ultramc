@@ -13,7 +13,7 @@ public class BufferTest
 		{
 		m_pool = new BufferPool(1024);
 		
-		BufferSet bs = m_pool.getBufferSet();
+		BufferSet bs = m_pool.createBufferSet();
 		
 		for (int I = 0; I < 10; I++)
 			bs.allocateBuffer();

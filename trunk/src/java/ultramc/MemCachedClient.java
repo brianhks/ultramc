@@ -164,15 +164,15 @@ public class MemCachedClient
 		
 		int bytesToWrite = sendBuffers[0].limit();
 		
-		BufferSet bs = getBufferSet();
+		List<BufferSet> bsList = null;
 		
 		try
 			{
 			Operation.writeToChannel(serverConnection.getChannel(), sendBuffers, bytesToWrite);
 			
-			Operation.readResponse(serverConnection, bs, 0, Operation.END_OF_LINE);
+			bsList = Operation.readResponse(serverConnection, this, 0, Operation.END_OF_LINE);
 			
-			resp = Operation.readLine(new ByteBufferInputStream(bs));
+			resp = Operation.readLine(new ByteBufferInputStream(bsList.get(0)));
 						
 			serverConnection.recycleConnection();
 			}
@@ -182,7 +182,12 @@ public class MemCachedClient
 			serverConnection.closeConnection();
 			}
 			
-		bs.freeBuffers();
+		if (bsList != null)
+			{
+			for (BufferSet bs : bsList)
+				bs.freeBuffers();
+			}
+			
 		return (resp);
 		}
 	
@@ -194,9 +199,9 @@ public class MemCachedClient
 		}
 		
 	//---------------------------------------------------------------------------
-	/*package*/ BufferSet getBufferSet()
+	/*package*/ BufferSet createBufferSet()
 		{
-		return (m_bufferPool.getBufferSet());
+		return (m_bufferPool.createBufferSet());
 		}
 		
 	//---------------------------------------------------------------------------

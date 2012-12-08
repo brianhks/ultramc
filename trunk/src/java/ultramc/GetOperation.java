@@ -71,31 +71,34 @@ public class GetOperation extends KeyedOperation<GetOperation>
 		
 		int bytesToWrite = sendBuffers[0].limit();
 		
-		BufferSet bs = m_client.getBufferSet();
+		List<BufferSet> bsList = null;
 		
 		try
 			{
 			writeToChannel(serverConnection.getChannel(), sendBuffers, bytesToWrite);
 			
-			readResponse(serverConnection, bs, m_timeout, END_OF_GET);
+			bsList = readResponse(serverConnection, m_client, m_timeout, END_OF_GET);
 			
-			ByteBufferInputStream is = new ByteBufferInputStream(bs);
-			
-			String line = null;
-			while ((line = readLine(is)) != null)
+			for (BufferSet bs : bsList)
 				{
-				if (line.startsWith("VALUE"))
-					{
-					String[] split = line.split(" ");
-					String key = split[1];
-					int flags = Integer.parseInt(split[2]);
-					int valueSize = Integer.parseInt(split[3]);
+				ByteBufferInputStream is = new ByteBufferInputStream(bs);
 				
-					m_responseMap.put(key, m_valueEncoder.decodeValue(is, valueSize, flags));
-					if (m_value == null)
-						m_value = m_responseMap.get(key);
-					is.read(); //Skips \r
-					is.read(); //Skips \n
+				String line = null;
+				while ((line = readLine(is)) != null)
+					{
+					if (line.startsWith("VALUE"))
+						{
+						String[] split = line.split(" ");
+						String key = split[1];
+						int flags = Integer.parseInt(split[2]);
+						int valueSize = Integer.parseInt(split[3]);
+					
+						m_responseMap.put(key, m_valueEncoder.decodeValue(is, valueSize, flags));
+						if (m_value == null)
+							m_value = m_responseMap.get(key);
+						is.read(); //Skips \r
+						is.read(); //Skips \n
+						}
 					}
 				}
 				
@@ -108,7 +111,12 @@ public class GetOperation extends KeyedOperation<GetOperation>
 			serverConnection.closeConnection();
 			}
 			
-		bs.freeBuffers();
+		if (bsList != null)
+			{
+			for (BufferSet bs : bsList)
+				bs.freeBuffers();
+			}
+			
 		
 		return (this);
 		}

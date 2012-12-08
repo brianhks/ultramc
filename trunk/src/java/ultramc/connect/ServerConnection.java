@@ -16,9 +16,9 @@ public class ServerConnection
 		m_channel = channel;
 		m_channel.configureBlocking(false);
 		
-		m_selector = Selector.open();
+		//m_selector = Selector.open();
 		
-		channel.register(m_selector, SelectionKey.OP_READ);
+		//channel.register(m_selector, SelectionKey.OP_READ);
 		}
 		
 	public Selector getSelector() { return (m_selector); }
@@ -28,7 +28,7 @@ public class ServerConnection
 		{
 		try
 			{
-			m_selector.close();
+			//m_selector.close();
 			m_channel.close();
 			}
 		catch (IOException ioe)

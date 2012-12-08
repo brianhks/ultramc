@@ -2,7 +2,10 @@ package ultramc;
 
 import java.nio.charset.Charset;
 import java.nio.channels.GatheringByteChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,15 +78,24 @@ public class Operation<T extends Operation>
 		}
 		
 	//---------------------------------------------------------------------------
-	/*package*/ static void readResponse(ServerConnection sc, BufferSet bufferSet, long timeout, byte[] stop)
+	/*package*/ static List<BufferSet> readResponse(ServerConnection sc, MemCachedClient client, long timeout, byte[] stop)
 			throws IOException
 		{
+		ArrayList<BufferSet> retList = new ArrayList<BufferSet>();
 		boolean done = false;
+		int channelCount = 1;
 		
-		ByteBuffer buf = bufferSet.allocateBuffer();
+		BufferSet bufferSet = client.createBufferSet();
+		Selector selector = Selector.open();
+		
+		//assigne channels to selector
+		SelectableChannel sChannel = sc.getChannel();
+		SelectionKey skey = sChannel.register(selector, SelectionKey.OP_READ);
+		skey.attach(bufferSet);
+		
 		do
 			{
-			int keyCount = sc.getSelector().select(timeout);
+			int keyCount = selector.select(timeout);
 			
 			if (keyCount == 0)
 				{
@@ -95,40 +107,53 @@ public class Operation<T extends Operation>
 				break;
 				}
 				
-			Iterator<SelectionKey> it = sc.getSelector().selectedKeys().iterator();
-			it.hasNext();
-			it.next();
-			it.remove();
-				
-			sc.getChannel().read(buf);
-			
-			if (buf.position() >= stop.length)
+			Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+			while (it.hasNext())
 				{
-				int checkStart = buf.position() - stop.length;
+				SelectionKey selKey = it.next();
+				it.remove();
+				BufferSet bufSet = (BufferSet)selKey.attachment();
+				ByteBuffer buf = bufSet.getCurrentBuffer();
+					
+				((ReadableByteChannel)selKey.channel()).read(buf);
 				
-				int I;
-				for (I = 0; I < stop.length; I++)
+				if (buf.position() >= stop.length)
 					{
-					byte b = buf.get(I+checkStart);
-					if (b != stop[I])
+					int checkStart = buf.position() - stop.length;
+					
+					int I;
+					for (I = 0; I < stop.length; I++)
 						{
-						break;
+						byte b = buf.get(I+checkStart);
+						if (b != stop[I])
+							{
+							break;
+							}
+						}
+						
+					if (I == stop.length) //We are done
+						{
+						selKey.cancel();
+						channelCount --;
+						buf.flip();
+						done = true;
+						retList.add(bufSet);
 						}
 					}
 					
-				if (I == stop.length) //We are done
-					done = true;
-				}
-				
-			if ((!done) && (buf.position() == buf.limit()))
-				{
-				buf.flip();  //prepare the buffer for reading
-				buf = bufferSet.allocateBuffer(); //Get a new one
+				//This will not be true if we are finished as we flipped the buffer
+				if (buf.position() == buf.limit())
+					{
+					buf.flip();  //prepare the buffer for reading
+					buf = bufSet.allocateBuffer(); //Get a new one
+					}
 				}
 			}
-		while (!done);
+		while (channelCount != 0);
 		
-		buf.flip(); //Flip last buffer to prepare for reading
+		selector.close();
+		
+		return (retList);
 		}
 		
 	//---------------------------------------------------------------------------
