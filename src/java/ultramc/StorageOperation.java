@@ -16,6 +16,7 @@ public abstract class StorageOperation<T extends StorageOperation>
 	private Object m_value;
 	private int m_expiry;
 	private boolean m_reply;
+	private int m_flags;
 	
 	private String m_response;
 	
@@ -26,6 +27,7 @@ public abstract class StorageOperation<T extends StorageOperation>
 		m_expiry = client.getDefaultExpiry();
 		m_reply = client.getDefaultReply();
 		m_response = NOT_CALLED;
+		m_flags = 0;
 		}
 		
 	abstract protected String getOperation();
@@ -34,6 +36,13 @@ public abstract class StorageOperation<T extends StorageOperation>
 	public T setExpiry(int exp)
 		{
 		m_expiry = exp;
+		return ((T)this);
+		}
+	
+	@SuppressWarnings("unchecked")
+	public T setFlag(int flag)
+		{
+		m_flags |= flag;
 		return ((T)this);
 		}
 		
@@ -47,7 +56,6 @@ public abstract class StorageOperation<T extends StorageOperation>
 	@SuppressWarnings("unchecked")
 	public T run()
 		{
-		int flags = 0;
 		String resp = NOT_STORED;
 		String key = m_keyEncoder.encodeKey(m_key);
 			
@@ -58,7 +66,7 @@ public abstract class StorageOperation<T extends StorageOperation>
 			return ((T)this);
 			}
 		
-		BufferSet bs = m_client.getBufferSet();
+		BufferSet bs = m_client.createBufferSet();
 		m_valueEncoder.encodeValue(m_value, new ByteBufferOutputStream(bs));
 		bs.flipBuffers();
 		List<ByteBuffer> bufferList = bs.getBuffers();
@@ -78,7 +86,7 @@ public abstract class StorageOperation<T extends StorageOperation>
 		StringBuilder command = new StringBuilder();
 		command.append(getOperation()).append(" ");
 		command.append(key).append(" ");
-		command.append(flags).append(" ");
+		command.append(m_flags).append(" ");
 		command.append(m_expiry).append(" ");
 		command.append(dataSize).append(" ");
 		if (!m_reply)
@@ -91,6 +99,8 @@ public abstract class StorageOperation<T extends StorageOperation>
 		int bytesToWrite = sendBuffers[0].limit();
 		bytesToWrite = dataSize + END_OF_LINE.length;
 		
+		List<BufferSet> bsList = null;
+		
 		try
 			{
 			writeToChannel(serverConnection.getChannel(), sendBuffers, bytesToWrite);
@@ -98,9 +108,9 @@ public abstract class StorageOperation<T extends StorageOperation>
 			bs.freeBuffers();
 			if (m_reply)
 				{
-				readResponse(serverConnection, bs, m_timeout, END_OF_LINE);
+				bsList = readResponse(serverConnection, m_client, m_timeout, END_OF_LINE);
 				
-				String line = readLine(new ByteBufferInputStream(bs));
+				String line = readLine(new ByteBufferInputStream(bsList.get(0)));
 						
 				if (line != null)
 					resp = line;
@@ -116,7 +126,12 @@ public abstract class StorageOperation<T extends StorageOperation>
 			serverConnection.closeConnection();
 			}
 		
-		bs.freeBuffers();
+		if (bsList != null)
+			{
+			for (BufferSet mybs : bsList)
+				mybs.freeBuffers();
+			}
+			
 		m_response = resp;
 		return ((T)this);
 		}

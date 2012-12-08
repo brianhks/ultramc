@@ -15,7 +15,7 @@ public class DefaultEncoderTest
 		BufferPool pool = new BufferPool(1024);
 		DefaultValueTranscoder encoder = new DefaultValueTranscoder(pool);
 		
-		BufferSet bs = pool.getBufferSet();
+		BufferSet bs = pool.createBufferSet();
 		encoder.encodeValue("String to encode", new ByteBufferOutputStream(bs));
 		List<ByteBuffer> bufList = bs.getBuffers();
 		
