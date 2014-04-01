@@ -4,20 +4,20 @@
 <suite name="LingoPoint test suite" verbose="1">
 	<run name="Buffer Pool Tests">
 		<classes>
-			<class name="ultramc.buffer.BufferTest"/>
+			<class name="org.agileclick.ultramc.buffer.BufferTest"/>
 		</classes>
 	</run>
 	
 	<run name="Storage Tests">
 		<classes>
-			<class name="ultramc.DefaultEncoderTest"/>
-			<class name="ultramc.StorageTest"/>
+			<class name="org.agileclick.ultramc.DefaultEncoderTest"/>
+			<class name="org.agileclick.ultramc.StorageTest"/>
 		</classes>
 	</run>
 	
 	<run name="Hash Tests">
 		<classes>
-			<class name="ultramc.HashTest"/>
+			<class name="org.agileclick.ultramc.HashTest"/>
 		</classes>
 	</run>
 	
