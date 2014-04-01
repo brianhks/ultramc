@@ -39,7 +39,7 @@ junit = new JUnitRule("test").setDescription("Run JUnit tests")
 pomRule = ivy.createPomRule("build/jar/pom.xml")
 		.addDepend(jp.getJarRule())
 		.addLicense("LGPL", "http://www.gnu.org/licenses/lgpl.html", "repo")
-		.addDeveloper("brianhks", "Brian", "brianhks1@gmail.com");
+		.addDeveloper("brianhks", "Brian", "brianhks1+ultramc@gmail.com");
 
 //------------------------------------------------------------------------------
 //==-- Maven Artifacts --==
